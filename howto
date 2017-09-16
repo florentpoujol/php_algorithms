@@ -1,0 +1,16 @@
+build zephir extension with
+
+    ./build z
+
+build c script with:
+
+    .build c nameofthefile
+
+The C script must be in C/ folder and the build is created in the C/builds/ folder.
+
+Run C or PHP script with:
+
+    ./run c nameofthefile arrayCount arraySize
+    ./run php nameofthefile arrayCount arraySize
+
+arrayCount and arraySize must be numeric
