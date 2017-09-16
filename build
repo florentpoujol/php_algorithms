@@ -1,0 +1,12 @@
+#!/bin/bash
+
+if [[ $1 == "z" ]]; then
+    cd zephir
+    zephir build
+    cd ../
+fi
+  
+if [[ $1 == "c" ]]; then
+    gcc c/$2.c -o c/builds/$2
+    echo "build end"
+fi

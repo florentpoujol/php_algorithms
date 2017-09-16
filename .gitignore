@@ -1,0 +1,5 @@
+gitignore/
+zephir/.temp/
+zephir/ext/
+zephir/*.log
+zephir/*.zep.swp
