@@ -1,9 +1,11 @@
 #!/bin/bash
 
+# params: c script_name array_count array_size
 if [[ $1 == "c" ]]; then
     ./c/builds/$2 $3 $4
 fi
 
+# params: c script_name array_count array_size
 if [[ $1 == "php" ]]; then
     php php/$2.php $3 $4
 fi

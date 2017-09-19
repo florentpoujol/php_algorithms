@@ -2,84 +2,140 @@
 #include <stdio.h>
 #include <time.h>
 
-int *merge_sort(int left[], int size)
+
+void display(int array[], int size, char *text)
+{
+    int i;
+    printf("%s size=%d : ", text, size);
+    for (i = 0; i < size; i++) {
+
+        printf("%d ", array[i]);
+    }
+    printf("\n");
+}
+
+
+void merge_sort(int *left, const int size)
 {
     if (size <= 1) {
-        return left;
+        return;
     }
 
-    // get all the elements to the right of middleId (inclusive)
-    int *right = malloc(sizeof(int) * (size / 2 + 1)); 
-    int middleId = (int)(size / 2); // the cast also floors the value when size is odd
-    int i, j = 0;
-    
-    for (i = middleId; i < size; i++) {
-        right[j] = left[i];
-        j++;
+    const int middleId = (int)(size / 2); // middleId also represent the "new size" of left
+    if (middleId > 1) {
+        merge_sort(left, middleId);
     }
-    
-    unsigned int leftSize = middleId, rightSize = size - middleId;
-    
-    if (leftSize > 1) {
-        left = merge_sort(left, leftSize);
-    }
+
+    int *right = (left + middleId); 
+    const int rightSize = size - middleId;
     if (rightSize > 1) {
-        right = merge_sort(right, rightSize);
+        merge_sort(right, rightSize);
     }
 
-    // sort content of left and right
-    int *newArray = malloc(sizeof(int) * size);
-    int leftId = 0, rightId = 0, arrayId = 0;
+    // the values in left and right are sorted
+    // but value in right may be smaller than some in left
 
-    while (leftId < leftSize && rightId < rightSize) {
-        if (left[leftId] <= right[rightId]) {
-            newArray[arrayId] = left[leftId];
+    // as long as values in left are < than the one in right
+    // do nothing because there are at the correct place
+    
+    // as soon as the first value in right is < than the one in left, 
+    // add them in order to a temp array
+    // until we evaluated all values in left or right
+
+    // add the remaining value from left in the temp array
+    // they are sorted already but have to move location inside left
+    // remaining values in right are sorted and in the correct place
+
+    // so finally piece things together in order:
+    // first values we didn't touched > temp array > remaining values in right
+
+    int *tmpArray; 
+    int leftId = 0, rightId = 0, tmpId = 0;
+    int firstUnsortedId = -1;
+
+    while (leftId < middleId && rightId < rightSize) 
+    {
+        if (left[leftId] <= right[rightId]) 
+        {
+            if (firstUnsortedId > -1) 
+            {
+                tmpArray[ tmpId++ ] = left[leftId];
+            }
+            
             leftId++;
-        } else {
-            newArray[arrayId] = right[rightId];
-            rightId++;
+        } 
+        else
+        {
+            if (firstUnsortedId == -1) 
+            {
+                firstUnsortedId = leftId;
+
+                tmpArray = malloc(sizeof(int) * (size - leftId));
+            }
+
+            tmpArray[ tmpId++ ] = right[ rightId++ ];
         }
-        arrayId++;
     }
 
-    // add the remaining values from left and right in the new sorted array
-    // we know that by that time, the remaining values in left are all smaller than the ones in right
-    for (i = leftId; i < leftSize; i++) {
-        newArray[arrayId] = left[i];
-        arrayId++;
-    }
-    for (i = rightId; i < rightSize; i++) {
-        newArray[arrayId] = right[i];
-        arrayId++;
-    }
-    free(left);
-    free(right);
+    if (firstUnsortedId > -1) {
+        int i;
+        // add the remaining left values to the tmpArray
+        for (i = leftId; i < middleId; i++) {
+            tmpArray[ tmpId++ ] = left[i];
+        }
+        // the remaining values in right are already at the end of left
+        // so no need to add them to tmpArray before coping tmpArray in left
 
-    return newArray;
+        // copy back the tmpArray inside left after the first values that we didn't moved
+        int tmpArraySize = (middleId + rightId) - firstUnsortedId;
+        for (i = 0; i < tmpArraySize; ++i)
+        {
+            left[ firstUnsortedId + i ] = tmpArray[i];
+        }
+
+        free(tmpArray);
+    }
+    // else: this means that all values in left were < to the values of right
+    // so no need to do anything else since everything is already sorted !
 }
+
+
+int check(int *array, int size)
+{
+    for (int i=1; i < size; i++) { 
+        if (array[i-1] > array[i]) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
 
 int main(int argc, char *argv[]) 
 {
     int arrayCount = atoi(argv[1]);
     int arraySize = atoi(argv[2]);
+    int total = arraySize * arrayCount;
     
-    int **data = malloc(sizeof(int) * arraySize *  arrayCount);
-    int i, j, dataId = 0;
+    int *data = malloc(sizeof(int) * total);
+    int i;
+    srand(time(NULL));
+    rand(); rand(); rand();
 
-    for (i = 0; i < arrayCount; i++) { 
-        int *array = malloc(sizeof(int) * arraySize);
-        for (j = 0; j < arraySize; j++) { 
-            array[j] = rand() % arraySize;
-        }
-        data[dataId] = array;
-        dataId++;
+    for (i = 0; i < total; i++) { 
+        data[i] = rand() % arraySize;
     }
 
     struct timespec start, end;
     clock_gettime(CLOCK_MONOTONIC_RAW, &start);
 
     for (i = 0; i < arrayCount; i++) {
-        merge_sort(data[i], arraySize);
+        int *a = (data + (i * arraySize));
+        // display(a, arraySize, "AVANT: ");
+        merge_sort(a, arraySize);
+        // if (! check(a, arraySize)) {
+        //     display(a, arraySize, "ERROR: ");
+        // }
     }
 
     clock_gettime(CLOCK_MONOTONIC_RAW, &end);
@@ -91,3 +147,4 @@ int main(int argc, char *argv[])
 
     return 0;
 }
+

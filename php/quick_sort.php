@@ -60,10 +60,22 @@ function quick_sort($array, $size = null)
 // ----------------------------------------
 // tests / stats
 
+// check that the array is indeed sorted
+function check($array)
+{
+    $count = count($array);
+    for ($i=1; $i < $count; $i++) { 
+        if ($array[$i-1] > $array[$i]) {
+            return false;
+        }
+    }
+    return true;
+}
+
 ini_set("memory_limit", "1G");
-ini_set("max_execution_time", "120");
-$arrayCount = 30;
-$arraySize = 100000;
+// ini_set("max_execution_time", "120");
+$arrayCount = (int)$argv[1];
+$arraySize = (int)$argv[2];
 
 $data = [];
 
@@ -79,15 +91,20 @@ for ($i = 0; $i < $arrayCount; $i++) {
 $starTime = microtime(true);
 
 for ($i = 0; $i < $arrayCount; $i++) { 
-    merge_sort($data[$i]);
+    // if (!check(quick_sort($data[$i]))) {
+    //     echo "wrong";
+    // }
+    quick_sort($data[$i]);
 }
 
 $endPhpMergeTime = microtime(true);
 $phpMergeDiff = $endPhpMergeTime - $starTime;
 
-
 for ($i = 0; $i < $arrayCount; $i++) { 
-    Sort\Sort::mergeSort($data[$i]);    
+    // if (!check(Sort\QuickSort::make($data[$i]))) {
+    //     echo "wrong2";
+    // }
+    Sort\QuickSort::make($data[$i]);
 }
 
 $endExtMergeTime = microtime(true);
@@ -100,13 +117,19 @@ for ($i = 0; $i < $arrayCount; $i++) {
 $endSortTime = microtime(true);
 $phpSortDiff = $endSortTime - $endExtMergeTime;
 
+// execute the C script and retrive the last line of its input (the one that begins by "C")
+//$cTime = exec("./c/builds/quick_sort $arrayCount $arraySize | grep C");
+$cTime = 0;
+// calculating C time with PHP whould gives a time slightly higher
+
 $str = <<<EOL
 <pre>
 Array count: $arrayCount
 Array size: $arraySize
-php merge_sort : $phpMergeDiff s
-ext mergeSort : $extMergeDiff s
-built-in sort : $phpSortDiff s
+php userland:           $phpMergeDiff s
+php extension (zephir): $extMergeDiff s
+php built-in sort:      $phpSortDiff s
+$cTime
 </pre>
 EOL;
 echo "$str";
@@ -151,4 +174,10 @@ Array size: 500000
 Build data time : 2.2172510623932
 quick_sort time : 14.667098999023
 sort time : 1.0235970020294
+*/
+
+/*
+
+
+
 */

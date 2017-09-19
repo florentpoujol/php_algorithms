@@ -34,11 +34,13 @@ class MergeSort
         int rightId = 0;
 
         while leftId < leftSize && rightId < rightSize {
-            if left[leftId] <= right[rightId] {
-                let newArray[] = left[leftId];
+            int l = (int)left[leftId];
+            int r = (int)right[rightId];
+            if l <= r {
+                let newArray[] = l;
                 let leftId++;
             } else {
-                let newArray[] = right[rightId];
+                let newArray[] = r;
                 let rightId++;
             }
         }

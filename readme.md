@@ -4,17 +4,17 @@ This project is the occasion for me to implement various search and sort algorit
 
 ## How to
 
-- Build zephir extension with:
+- Build Zephir extension with:
 
 ```
 ./build z
 ```
 
-- Build c script with:
+- Build C script with:
 
 ```
 .build c nameofthefile
-# The C script must be in C/ folder and the build is created in the C/builds/ folder.
+# The C script must be in `c/` folder and the build is created in the `c/builds/` folder.
 ```
 
 - Run C or PHP script with:
@@ -29,16 +29,42 @@ This project is the occasion for me to implement various search and sort algorit
 
 The benchmarks are done when executing the php (7.0.x) script via cli and passing two arguments: the array count and the array size.
 
-Each functions (the PHP (userland) one from the same file, the one from the PHP extension, the built-in sort() and the C one) must sort or search through [array count] arrays of [array size] elements each.
+Each functions (the PHP one from the same file, the one from the PHP extension, the C one and the built-in sort()) must sort or search through [array count] arrays of [array size] elements each.
 
-The time it takes to perform each is mesured and displayed.
+The time it takes each functions to process all arrays is mesured and displayed.
 
 ### Takeaway
 
-- The PHP (userland) function is by far the slowest (20 times slowe than the built-in sort())
-- The function from the extension is at least 50% faster for a very similar code
-- The C function, despite using a probably "naive" implementation of each algo is way faster
-- The PHP built-in sort() function is the fastest, usually 10 times faster than the extension but only slighly faster than the C function
+- The PHP (userland) function is by far the slowest (20 times slower than the built-in sort()).
+- The function from the extension is at least 50% faster for a very similar code.
+- The C function, despite using a probably "naive" implementation of each algo is almost the fastest.
+- The PHP built-in sort() function is the fastest, only slighly faster than the C function but usually 10 times faster than the extension.
+
+### Binary search
+
+```
+Array count: 100
+Array size: 100000
+php userland:           0.07220196723938 s
+php extension (zephir): 0.071554899215698 s
+php built-in in_array:  0.010440111160278 s
+C:                      0.000060 s
+
+Array count: 100
+Array size: 1000000
+php userland:           1.180379152298 s
+php extension (zephir): 1.1114928722382 s
+php built-in in_array:  0.099914073944092 s
+C:                      0.000081 s
+
+Array count: 100
+Array size: 2000000
+php userland:           2.1361570358276 s
+php extension (zephir): 2.1351580619812 s
+php built-in in_array:  0.20601606369019 s
+C:                      0.000089 s
+
+```
 
 ### Merge sort
 
@@ -70,4 +96,34 @@ PHP userland:           23.012610912323 s
 PHP extension (zephir): 9.6566219329834 s  
 PHP built-in sort:      0.98485493659973 s  
 C:                      1.025418 s  
+```
+
+### Quick sort
+
+C function not available (it doesn't work :().
+
+```
+Array count: 50
+Array size: 10000
+php userland:           0.80128002166748 s
+php extension (zephir): 0.35245800018311 s
+php built-in sort:      0.064351081848145 s
+
+Array count: 30
+Array size: 100000
+php userland:           5.7431969642639 s
+php extension (zephir): 2.5146708488464 s
+php built-in sort:      0.48189902305603 s
+
+Array count: 10
+Array size: 500000
+php userland:           10.714740037918 s
+php extension (zephir): 4.7196428775787 s
+php built-in sort:      0.93556809425354 s
+
+Array count: 5
+Array size: 1000000
+php userland:           11.382132053375 s
+php extension (zephir): 5.0132319927216 s
+php built-in sort:      0.98790097236633 s
 ```

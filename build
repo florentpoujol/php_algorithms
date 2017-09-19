@@ -6,7 +6,8 @@ if [[ $1 == "z" ]]; then
     cd ../
 fi
   
-if [[ $1 == "c" ]]; then
+# params: c script_name
+if [[ $1 == "c" ]]; then 
     gcc c/$2.c -o c/builds/$2
     echo "build end"
 fi
