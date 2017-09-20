@@ -10,12 +10,6 @@ class BinarySearch
             return false;
         }
         if (size == 1) {
-            if (target == theArray[0]) {
-                return true;
-            } else {
-                return false;
-            }
-
             return (target == theArray[0]);
         }
 

@@ -47,7 +47,9 @@ class QuickSort
             }        
         }
 
-        uint leftSize = count(left);
+        uint leftSize = count(left); 
+        // conrary to PHP, there is no lost of perf in Zephir
+        // when calling count() or incrementing leftSize in the for() loop above.
         if (leftSize > 1) {
             let left = self::make(left, leftSize);
         }

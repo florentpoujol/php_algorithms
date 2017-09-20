@@ -62,12 +62,13 @@ function merge_sort($left, $size = null)
 // ----------------------------------------
 // tests / stats
 
-ini_set("memory_limit", "1G");
-// ini_set("max_execution_time", "120");
+// ini_set("memory_limit", "1G");
 $arrayCount = (int)$argv[1];
 $arraySize = (int)$argv[2];
 
 $data = [];
+srand(time());
+rand(); rand(); rand();
 
 // build an array of $arrayCount arrays of $arraySize size
 for ($i = 0; $i < $arrayCount; $i++) { 
@@ -118,32 +119,32 @@ EOL;
 echo "$str";
 
 /*
-Array count: 50
-Array size: 10000
-php userland:           1.5883460044861 s
-php extension (zephir): 0.75912380218506 s
-php built-in sort:      0.064247131347656 s
-C:                      0.076066 s
+Array count: 50  
+Array size: 10000  
+PHP userland:           1.5883460044861 s  
+PHP extension (zephir): 0.75912380218506 s  
+PHP built-in sort:      0.064247131347656 s  
+C:                      0.076066 s  
 
-Array count: 30
-Array size: 100000
-php userland:           11.057584047318 s
-php extension (zephir): 5.1014478206635 s
-php built-in sort:      0.48250508308411 s
-C:                      0.539713 s
+Array count: 30  
+Array size: 100000  
+PHP userland:           11.057584047318 s  
+PHP extension (zephir): 5.1014478206635 s  
+PHP built-in sort:      0.48250508308411 s  
+C:                      0.539713 s  
 
 Array count: 10
 Array size: 500000
-php userland:           20.288812160492 s
-php extension (zephir): 9.1355178356171 s
-php built-in sort:      0.9337911605835 s
-C:                      0.981725 s
+php userland:           20.105852127075 s
+php extension (zephir): 8.7928829193115 s
+php built-in sort:      0.93890905380249 s
+C:                      0.926520 s  
 
 Array count: 5
 Array size: 1000000
-php userland:           23.012610912323 s
-php extension (zephir): 9.6566219329834 s
-php built-in sort:      0.98485493659973 s
-C:                      1.025418 s
+php userland:           21.140818834305 s
+php extension (zephir): 9.0098340511322 s
+php built-in sort:      0.99025511741638 s
+C:                      0.965595 s 
 
 */

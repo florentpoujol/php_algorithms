@@ -45,6 +45,8 @@ function quick_sort($array, $size = null)
     }
 
     $leftSize = count($left);
+    // creating leftSize above and incrementing if in the loop 
+    // is noticeably slower than using count()
     if ($leftSize > 1) {
         $left = quick_sort($left, $leftSize);
     }
@@ -72,12 +74,12 @@ function check($array)
     return true;
 }
 
-ini_set("memory_limit", "1G");
-// ini_set("max_execution_time", "120");
 $arrayCount = (int)$argv[1];
 $arraySize = (int)$argv[2];
 
 $data = [];
+srand(time());
+rand(); rand(); rand();
 
 // build an array of $arrayCount arrays of $arraySize size
 for ($i = 0; $i < $arrayCount; $i++) { 
@@ -118,8 +120,7 @@ $endSortTime = microtime(true);
 $phpSortDiff = $endSortTime - $endExtMergeTime;
 
 // execute the C script and retrive the last line of its input (the one that begins by "C")
-//$cTime = exec("./c/builds/quick_sort $arrayCount $arraySize | grep C");
-$cTime = 0;
+$cTime = exec("./c/builds/quick_sort $arrayCount $arraySize | grep C");
 // calculating C time with PHP whould gives a time slightly higher
 
 $str = <<<EOL
@@ -137,47 +138,29 @@ echo "$str";
 /*
 Array count: 50
 Array size: 10000
-php merge_sort : 1.6033179759979 s
-ext mergeSort : 0.75007104873657 s
-built-in sort : 0.064254999160767 s
+php userland:           0.80580806732178 s
+php extension (zephir): 0.35681986808777 s
+php built-in sort:      0.064460039138794 s
+C:                      0.072400 s
 
 Array count: 30
 Array size: 100000
-php merge_sort : 10.968606948853 s
-ext mergeSort : 5.0370688438416 s
-built-in sort : 0.48219299316406 s
+php userland:           5.7532091140747 s
+php extension (zephir): 2.5272769927979 s
+php built-in sort:      0.4820020198822 s
+C:                      0.526823 s
 
 Array count: 10
 Array size: 500000
-php merge_sort : 20.224661111832 s
-ext mergeSort : 8.9544038772583 s
-built-in sort : 0.93342590332031 s
+php userland:           10.721113920212 s
+php extension (zephir): 4.752336025238 s
+php built-in sort:      0.93213200569153 s
+C:                      0.981925 s
 
-
-*/
-
-/*
-Array count: 10
-Array size: 10000
-Build data time : 0.060626029968262
-quick_sort time : 0.21846914291382
-sort time : 0.014840841293335
-
-Array count: 10
-Array size: 100000
-Build data time : 0.42583203315735
-quick_sort time : 2.5013740062714
-sort time : 0.18328595161438
-
-Array count: 10
-Array size: 500000
-Build data time : 2.2172510623932
-quick_sort time : 14.667098999023
-sort time : 1.0235970020294
-*/
-
-/*
-
-
-
+Array count: 5
+Array size: 1000000
+php userland:           11.271620988846 s
+php extension (zephir): 5.0043919086456 s
+php built-in sort:      0.98648905754089 s
+C:                      1.029710 s
 */

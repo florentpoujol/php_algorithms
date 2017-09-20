@@ -1,12 +1,3 @@
-
-/*
-
-Actually this doesn't work 
-soimetimes it works 
-but sometimes some values gets changed in memory, I don't know why
-also when the numbers become too big, I get different kind of memory errors
-*/
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
@@ -24,17 +15,10 @@ void display(int array[], int size, char *text)
 }
 
 
-void quick_sort(int *array, const size_t size)
+void quick_sort(int *array, const uint size)
 {
     if (size <= 1) {
         return;
-    }
-
-    int d = 1; // debug
-    if (d) {
-        printf("------------------------ \n");
-        display(array, size, "");      
-        printf("array[6]=%d \n", array[6]);
     }
 
     // select pivot (median of three)
@@ -52,58 +36,39 @@ void quick_sort(int *array, const size_t size)
         return;
     }
 
-    int halfSize = (int)(size/2);
-    int pivot = array[halfSize];
+    int pivot = array[ (int)(size/2) ];
     if (pivot < first) {
         pivot = first;
     } else if (pivot > last) {
         pivot = last;
     }
 
-    if (d) {
-        printf("first=%d pivot=%d last=%d\n", first, pivot, last);      
-    }
-    
     // moves values
-    printf("array[6]=%d %d p=%p \n", array[6], *(array + 6), (array + 6));
-    int *left  = calloc(halfSize, sizeof(int));
-    int *right = calloc(halfSize, sizeof(int));
-    printf("array[6]=%d %d p=%p \n", array[6], *(array + 6), (array + 6));
-    int value;
-    size_t i, leftSize = 0, middleSize = 0, rightSize = 0;
+    // could improve memory consumption by counting the values first
+    // so that to create left and right with just the correct size
+    // but it's 50% slower...
+    // maybe we could realloc by chunk of 1/4 size ony when we need it...
+    int *left  = malloc(sizeof(int) * size);
+    int *right = malloc(sizeof(int) * size);
 
+    int i, leftSize = 0, middleSize = 0, rightSize = 0;
     for (i = 0; i < size; i++) {
-        value = array[i];
-        if (value == 33) {
-            printf("************** \n");
-            printf("value=33 i=%d rightSize=%d array[i]=%d \n", (int)i, (int)rightSize, array[i]);
-            printf("************** \n");
-        }
+        int value = array[i];
         if (value < pivot) {
-            left[leftSize] = value;
-            leftSize++;
+            left[ leftSize++ ] = value;
         } else if (value > pivot) {
-            right[rightSize] = value;
-            rightSize++;
+            right[ rightSize++ ] = value;
         } else {
             middleSize++;
         }        
     }
 
-    if (d) {
-        printf("ls=%d ms=%d rs=%d \n", (int)leftSize, (int)middleSize, (int)rightSize);      
-    }
-
-    display(left, leftSize, "left before:");
-    display(right, rightSize, "right before:");
     if (leftSize > 1) {
         quick_sort(left, leftSize);
-        display(left, leftSize, "left after:");
     }
 
     if (rightSize > 1) {
         quick_sort(right, rightSize);
-        display(right, rightSize, "right after:");
     }
 
     // merge
@@ -113,19 +78,25 @@ void quick_sort(int *array, const size_t size)
     for (i = 0; i < middleSize; i++) {
         array[ (leftSize + i) ] = pivot;
     }
-    int offset = leftSize + middleSize;
+    const int offset = leftSize + middleSize;
     for (i = 0; i < rightSize; i++) {
         array[ (offset + i) ] = right[i];
     }
 
-    // free(left);
-    // free(right);
-
-    display(array, size, "result:");
-    
+    free(left);
+    free(right);
 }
 
 
+int check(int *array, int size)
+{
+    for (int i=1; i < size; i++) { 
+        if (array[i-1] > array[i]) {
+            return 0;
+        }
+    }
+    return 1;
+}
 
 
 int main(int argc, char *argv[]) 
@@ -135,24 +106,26 @@ int main(int argc, char *argv[])
     ulong total = arraySize * arrayCount;
     ulong i;
     
-    // int *data = malloc(sizeof(int) * total);
-    int data[] = {1, 5, 9, 5, 4, 17, 3, 15, 2, 7, 9, 19, 13, 10, 9, 8, 5, 8, 6, 10};
+    int *data = malloc(sizeof(int) * total);
     srand(time(NULL));
     rand(); rand(); rand();
 
     for (i = 0; i < total; i++) {
-        // data[i] = rand() % arraySize;
+        data[i] = rand() % arraySize;
     }
 
     struct timespec start, end;
     clock_gettime(CLOCK_MONOTONIC_RAW, &start);
 
-    for (i = 0; i < arrayCount; i += arraySize) {
-        display(data + i, arraySize, "BEFORE");
-        quick_sort( (data + (i * arraySize)), arraySize);
-        display(data + i, arraySize, "AFTER");
+    for (i = 0; i < arrayCount; i++) 
+    {
+        int *_data = (data + (i * arraySize));
+        // display(_data, arraySize, "BEFORE");
+        quick_sort( _data, arraySize);
+        // if (! check(_data, arraySize)) {
+        //     display(_data, arraySize, "ERROR: ");
+        // }
     }
-    // free(data);
 
     clock_gettime(CLOCK_MONOTONIC_RAW, &end);
     double diffSec = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1E9;

@@ -28,8 +28,6 @@ function binary_search($array, $target)
 // ----------------------------------------
 // tests / stats
 
-// ini_set("memory_limit", "1G");
-// ini_set("max_execution_time", "120");
 $arrayCount = (int)$argv[1];
 $arraySize = (int)$argv[2];
 
@@ -78,7 +76,6 @@ $phpSortDiff = $endSortTime - $endExtMergeTime;
 
 // execute the C script and retrive the last line of its input (the one that begins by "C")
 $cTime = exec("./c/builds/binary_search $arrayCount $arraySize | grep C");
-
 // calculating C time with PHP whould gives a time slightly higher
 
 $str = <<<EOL
@@ -87,7 +84,7 @@ Array count: $arrayCount
 Array size: $arraySize
 php userland:           $phpMergeDiff s
 php extension (zephir): $extMergeDiff s
-php built-in in_array:      $phpSortDiff s
+php built-in in_array:  $phpSortDiff s
 $cTime
 </pre>
 EOL;
