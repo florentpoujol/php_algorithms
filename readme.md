@@ -131,3 +131,60 @@ php extension (zephir): 5.0043919086456 s
 php built-in sort:      0.98648905754089 s
 C:                      1.029710 s
 ```
+
+### Binary Tree
+
+It take 5 seconds to build an unbalanced tree from 10000 sorted values.
+Only 0.04 s to build from random values. (0.02 s to balance).
+
+```
+Array count: 50
+Array size: 10000
+build data time :           0.10264301300049 s
+php BT search :             0.00020813941955566 s
+php Balanced BT search :    0.00013303756713867 s
+php built-in in_array() :   0.00026392936706543 s
+php BT sort :               0.40845394134521 s
+php Balanced BT sort :      0.39661407470703 s
+php built-in sort() :       0.034395933151245 s
+
+Array count: 30
+Array size: 100000
+build data time :           3.1138999462128 s
+php BT search :             0.00017213821411133 s
+php Balanced BT search :    0.00014305114746094 s
+php built-in in_array() :   0.0014889240264893 s
+php BT sort :               12.102861881256 s
+php Balanced BT sort :      12.167613983154 s
+php built-in sort() :       0.2691650390625 s
+
+
+Array count: 10
+Array size: 500000
+build data time :           94.416689157486 s
+php BT search :             0.00007700 s (7.7009201049805E-5 s)
+php Balanced BT search :    0.00003290 s (3.2901763916016E-5 s)
+php built-in in_array() :   0.00006008 s (6.0081481933594E-5 s)
+php BT sort :               95.364817857742 s
+php Balanced BT sort :      92.899277210236 s
+php built-in sort() :       0.54810690879822 s
+
+Array count: 1
+Array size: 500000
+build data time :           95.854732036591 s
+php BT search :             2.0027160644531E-5 s
+php Balanced BT search :    5.9604644775391E-6 s
+php built-in in_array() :   8.8930130004883E-5 s
+php BT sort :               9.8844139575958 s
+php Balanced BT sort :      9.3771319389343 s
+php built-in sort() :       0.099236011505127 s
+
+Incremental build time :
+Tree size   BT   Balanced BT    Total
+100000      1.2     1.8         3.0  s
+150000      2.9     4.2         7.2  s
+200000      5.4     7.5         12.9 s
+250000      8.8     11.9        20.8 s
+
+```
+ 

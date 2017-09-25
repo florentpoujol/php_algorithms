@@ -8,6 +8,6 @@ fi
   
 # params: c script_name
 if [[ $1 == "c" ]]; then 
-    gcc c/$2.c -o c/builds/$2
+    gcc c/$2.c -g -o c/builds/$2
     echo "build end"
 fi

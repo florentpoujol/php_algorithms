@@ -2,6 +2,10 @@
 
 # params: c script_name array_count array_size
 if [[ $1 == "c" ]]; then
+    if [ -f "core" ]; then
+        rm core
+    fi
+    ulimit -c unlimited
     ./c/builds/$2 $3 $4
 fi
 

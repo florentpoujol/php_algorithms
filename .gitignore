@@ -1,4 +1,11 @@
 gitignore/
+
+c/builds/
+c/a.out
+core
+
+.idea
+
 zephir/.temp/
 zephir/ext/
 zephir/*.log
