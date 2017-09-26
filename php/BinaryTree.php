@@ -64,9 +64,78 @@ class BinaryTree
      */
     public $nodesPerKey = [];
 
+
     public function __construct(BinaryTreeNode $root = null)
     {
         $this->root = $root;
+    }
+
+    public function traversel(Callable $callback, string $order = 'in')
+    {
+        if ($node === null) {
+            $node = $this->root;
+        }
+
+        $flags = [];
+        $LEFT_VISITED = 1;
+        $RIGHT_VISITED = 2;
+        $CB_CALLED = 4;
+
+        while ($node !== null) {
+            $key = $node->key;
+
+            if (! isset($flags[$key])) {
+                $flags[$key] = 0;
+            }
+            $f = &$flags[$key];
+
+            if ($order === 'pre' && (~$f & $CB_CALLED)) {
+                $f |= $CB_CALLED;
+
+                $return = call_user_func($callback, $node);
+                if ($return !== null) {
+                    return $return;
+                }
+            }
+
+            if (~$f & $LEFT_VISITED) {
+                $f |= $LEFT_VISITED;
+
+                if ($node->left) {
+                    $node = $node->left;
+                    continue;
+                }
+            }
+
+            if ($order === 'in' && (~$f & $CB_CALLED)) {
+                $f |= $CB_CALLED;
+
+                $return = call_user_func($callback, $node);
+                if ($return !== null) {
+                    return $return;
+                }
+            }
+
+            if (~$f & $RIGHT_VISITED) {
+                $f |= $RIGHT_VISITED;
+            
+                if ($node->right) {
+                    $node = $node->right;
+                    continue;
+                }
+            }
+
+            if ($order === 'post' && (~$f & $CB_CALLED)) {
+                $f |= $CB_CALLED;
+
+                $return = call_user_func($callback, $node);
+                if ($return !== null) {
+                    return $return;
+                }
+            }
+
+            $node = $node->parent;
+        }
     }
 
     /**
@@ -77,16 +146,14 @@ class BinaryTree
      * @param int $order  "post" or "pre"
      * @return mixed
      */
-    public function traverse(Callable $callback, string $order = 'in', BinaryTreeNode $node = null)
+    public function traverser(Callable $callback, string $order = 'in', BinaryTreeNode $node = null)
     {
-        // this implementation, not using a recursive call to traverse
-        // is ORDERS OF MAGNITUDE faster than using recursive calls
         if ($node === null) {
             $node = $this->root;
         }
 
         if ($order === 'pre') {
-            $return = $callback($node);
+            $return = call_user_func($callback, $node);
             if ($return !== null) {
                 return $return;
             }
@@ -100,7 +167,7 @@ class BinaryTree
         }
 
         if ($order === 'in') {
-            $return = $callback($node);
+            $return = call_user_func($callback, $node);
             if ($return !== null) {
                 return $return;
             }
@@ -114,7 +181,7 @@ class BinaryTree
         }
 
         if ($order === 'post') {
-            $return = $callback($node);
+            $return = call_user_func($callback, $node);
             if ($return !== null) {
                 return $return;
             }
@@ -132,7 +199,7 @@ class BinaryTree
         }
 
         $root = $this->root;
-        while ($root !== null) {
+        while (1) {
             if ($newNode->key < $root->key) {
                 if ($root->left) {
                     $root = $root->left;
@@ -140,7 +207,7 @@ class BinaryTree
                 } else {
                     $root->left = $newNode;
                     $newNode->parent = $root;
-                    break;
+                    return;
                 }
             }
 
@@ -151,25 +218,23 @@ class BinaryTree
                 } else {
                     $root->right = $newNode;
                     $newNode->parent = $root;
-                    break;
+                    return;
                 }
             }
 
-            if ($newNode->key === $root->key) {
-                // in this implementation, do not allow to add another node with the same key
-                return;
-            }
+            return;
         }
     }
 
     /**
      * @param mixed $key
-     * @return BinaryTreeNode|void
+     * @return BinaryTreeNode|null
      */
     public function find($key)
     {
         $root = $this->root;
-        while ($root !== null) {
+
+        while (1) {
             if ($key === $root->key) {
                 return $root;
             }
@@ -179,23 +244,20 @@ class BinaryTree
                     $root = $root->left;
                     continue;
                 }
-                return null;
-            }
-
-            if ($key > $root->key) {
+            } else {
                 if ($root->right) {
                     $root = $root->right;
                     continue;
                 }
-                return null;
             }
+
+            return null;
         }
     }
 
     public function balance()
     {
-        $this->nodesPerKey = $this->toArray();
-//        ksort($this->nodesPerKey);
+        $this->nodesPerKey = $this->sortr();
         $sortedKeys = array_keys($this->nodesPerKey);
         $this->root = $this->_balance($sortedKeys);
     }
@@ -217,19 +279,19 @@ class BinaryTree
 
         if ($size === 1) {
             $node = $nodesPerKey[ $sortedKeys[0] ];
-            $node->parent = null;
-            $node->left = null;
-            $node->right = null;
+            // $node->parent = null;
+            // $node->left = null;
+            // $node->right = null;
         }
         elseif ($size === 2) {
             $node = $nodesPerKey[ $sortedKeys[1] ];
-            $node->parent = null;
-            $node->right = null;
+            // $node->parent = null;
+            // $node->right = null;
 
             $node->left = $nodesPerKey[ $sortedKeys[0] ];
             $node->left->parent = $node;
-            $node->left->left = null;
-            $node->left->right = null;
+            // $node->left->left = null;
+            // $node->left->right = null;
         }
         else { // $size >= 3
             $middleId = (int)($size / 2);
@@ -238,7 +300,7 @@ class BinaryTree
             $middleKey = array_shift($right);
 
             $node = $nodesPerKey[$middleKey];
-            $node->parent = null;
+            // $node->parent = null;
 
             $node->left = $this->_balance($sortedKeys);
             $node->left->parent = $node;
@@ -250,7 +312,7 @@ class BinaryTree
         return $node;
     }
 
-    public function toArray(): array
+    public function sortl(): array
     {
         // it is twice slower to use $this->traverse() than a custom loop
         $a = [];
@@ -259,6 +321,7 @@ class BinaryTree
 
         while ($node !== null) {
             $key = $node->key;
+
             if (! isset($flags[$key])) {
                 $flags[$key] = 0;
             }
@@ -272,10 +335,14 @@ class BinaryTree
                 }
             }
 
-            $a[$key] = $node;
-
             if ($flags[$key] < 2) {
                 $flags[$key] = 2;
+                
+                $a[$key] = $node;
+            }
+
+            if ($flags[$key] < 3) {
+                $flags[$key] = 3;
 
                 if ($node->right) {
                     $node = $node->right;
@@ -289,18 +356,40 @@ class BinaryTree
         return $a;
     }
 
+    public function sortr(BinaryTreeNode $node = null): void
+    {
+        // it is twice slower to use $this->traverse() than a custom loop
+        if ($node === null) {
+            $node = $this->root;
+            $this->nodesPerKey = [];
+        }
+
+        if ($node->left) {
+            $this->sortr($node->left);
+        }
+
+        $this->nodesPerKey[$key] = $node;
+
+        if ($node->right) {
+            $this->sortr($node->right);
+        }
+    }
+
     public function print()
     {
         $a = [];
-        $this->traverse(
+        $this->traverser(
             function (BinaryTreeNode $node) use (&$a) {
                 $nodeInfo = $node->toArray();
+                
                 if ($node->left) {
                     $nodeInfo['l'] = $a[$node->left->key];
                 }
+
                 if ($node->right) {
                     $nodeInfo['r'] = $a[$node->right->key];
                 }
+
                 $a[$node->key] = $nodeInfo;
             }
         , 'post');

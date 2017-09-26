@@ -72,6 +72,8 @@ int main(int argc, char *argv[])
         // binary_search((data + i), arraySize, targets[i]);
     }
 
+    free(data);
+
     clock_gettime(CLOCK_MONOTONIC_RAW, &end);
     double diffSec = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1E9;
 

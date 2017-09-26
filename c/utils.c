@@ -1,15 +1,28 @@
 
+#include <stdlib.h>
+#include <time.h>
+
 #define REGISTER_TIME(varName) struct timespec varName; \
     clock_gettime(CLOCK_MONOTONIC_RAW, &varName);
 
 
-void array_print(int array[], int size, char *text)
+void array_print_inline(int array[], int size, char *text)
 {
     int i;
     printf("%s size=%d : ", text, size);
     for (i = 0; i < size; i++) {
 
         printf("%d ", array[i]);
+    }
+    printf("\n");
+}
+
+void array_print(int array[], int size, char *text)
+{
+    int i;
+    printf("%s size=%d\n", text, size);
+    for (i = 0; i < size; i++) {
+        printf("%d : %d\n", i, array[i]);
     }
     printf("\n");
 }
