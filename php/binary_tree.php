@@ -2,26 +2,92 @@
 
 require_once 'BinaryTree.php';
 
-function buildBT(array $randomValues): BinaryTree
+$timeVars = [];
+function register_time_var(string $varName)
+{
+    global $timeVars;
+    $timeVars[$varName] = microtime(true);
+    echo "register_time_var: $varName \n";
+}
+
+function get_time_diffs(): array
+{
+    global $timeVars;
+    $varNames = array_keys($timeVars);
+    $diffs = [];
+    $lastName = "";
+
+    foreach ($varNames as $i => $name) {
+        if ($i === 0) {
+            $lastName = $name;
+            continue;
+        }
+
+        $diffs[ $name . "Diff" ] = $timeVars[$name] - $timeVars[$lastName];
+        $lastName = $name;
+    }
+
+    return $diffs;
+}
+
+function buildBT(array $sortedValues, bool $randomize = true): BinaryTree
 {
     $tree = new BinaryTree;
-    $size = count($randomValues);
+    $size = count($sortedValues);
+    $lastNode = null;
+
+    if ($randomize) {
+        shuffle($sortedValues);
+    }
+
     while ($size-- > 0) {
-        $value = array_pop($randomValues);
+        $value = array_shift($sortedValues);
         $node = new BinaryTreeNode($value);
-        $tree->insert($node);
+        if ($randomize) {
+            $tree->insert($node);
+        } else {
+            // consider values sorted ASC
+            // it is prohibitively slow to insert them
+            // while traversing the whole tree (which is just like a linked list in that case)
+            if ($lastNode) {
+                $lastNode->right = $node;
+                $node->parent = $lastNode;
+            } else {
+                $tree->insert($node);
+            }
+            $lastNode = $node;
+        }
     }
     return $tree;
 }
 
-function buildEBT(array $randomValues): Sort\BinaryTree
+function buildEBT(array $sortedValues, bool $randomize = true): Sort\BinaryTree
 {
     $tree = new Sort\BinaryTree;
-    $size = count($randomValues);
+    $size = count($sortedValues);
+    $lastNode = null;
+
+    if ($randomize) {
+        shuffle($sortedValues);
+    }
+
     while ($size-- > 0) {
-        $value = array_pop($randomValues);
+        $value = array_shift($sortedValues);
         $node = new Sort\BinaryTreeNode($value);
-        $tree->insert($node);
+        if ($randomize) {
+            $tree->insert($node);
+        } else {
+            // consider values sorted ASC
+            // it is prohibitively slow to insert them
+            // while traversing the whole tree (which is just like a linked list in that case)
+            if ($lastNode) {
+                $lastNode->right = $node;
+                $node->parent = $lastNode;
+            } else {
+                $tree->insert($node);
+            }
+            $lastNode = $node;
+        }
     }
     return $tree;
 }
@@ -42,121 +108,260 @@ $treeCount = (int)($argv[1] ?? $_GET['treeCount'] ?? 1);
 $treeSize = (int)($argv[2] ?? $_GET['treeSize'] ?? 10); // node count
 
 
-$starTime = microtime(true);
+//$starTime = microtime(true);
+register_time_var('start');
 
-$randomValues = range(0, $treeSize-1);
-shuffle($randomValues);
+if (false) {
+    $seedValues = range(0, $treeSize-1); // not random values
 
-$bt = buildBT($randomValues);
+    // ubt = unbalanced BT
+    $ubt = buildBT($seedValues, false); // do not randomize values
 
-shuffle($randomValues);
-$bst = buildBT($randomValues);
-$bst->balance();
+    echo "First tree built \n";
+    // bbt = balanced BT
+    $bbt = buildBT($seedValues); // values randomized before building the tree
+    echo "Second tree built \n";
 
-shuffle($randomValues);
-$ebt = buildEBT($randomValues);
-//var_dump($ebt->toArray());
-$ebt->balance();
+    $bbt->balance();
+    echo "Second tree balanced \n";
 
-shuffle($randomValues);
+    $targets = range(0, $treeCount);
+    shuffle($targets);
 
-$buildDataTime = microtime(true);
-$buildDataDiff = $buildDataTime - $starTime;
+    register_time_var('buildData');
 
-
-for ($i = 0; $i < $treeCount; $i++) {
-    $target = mt_rand(0, $treeSize-1);
-    if ($bt->find($target) === null) {
-        var_dump("value not found bt", $target);
-        $bt->print();
+    for ($i = 0; $i < $treeCount; $i++) {
+        $target = $targets[$i];
+        if ($ubt->findLoop($target) === null) {
+            var_dump("value not found", $target);
+            $ubt->print();
+        }
     }
-}
 
-$bstSearchTime = microtime(true);
-$bstSearchDiff = $bstSearchTime - $buildDataTime;
+    register_time_var('unbalancedBT_FindLoop');
 
-for ($i = 0; $i < $treeCount; $i++) {
-    $target = mt_rand(0, $treeSize-1);
-    if ($bst->find($target) === null) {
-        var_dump("value not found bst ", $target);
-        $bst->print();
+    for ($i = 0; $i < $treeCount; $i++) {
+        $target = $targets[$i];
+        if ($ubt->findRecurse($target) === null) {
+            var_dump("value not found", $target);
+            $ubt->print();
+        }
     }
-}
 
-$bbstSearchTime = microtime(true);
-$bbstSearchDiff = $bbstSearchTime - $bstSearchTime;
+    register_time_var('unbalancedBT_FindRecurse');
 
-for ($i = 0; $i < $treeCount; $i++) {
-    $target = mt_rand(0, $treeSize-1);
-    if ($ebt->find($target) === null) {
-        var_dump("value not found ebt ", $target);
-        $ebt->print();
+    for ($i = 0; $i < $treeCount; $i++) {
+        $ubt->sortLoop();
     }
+
+    register_time_var('unbalancedBT_SortLoop');
+
+    /*for ($i = 0; $i < $treeCount; $i++) {
+        // gives a segfault when treeSize > 33000
+        $ubt->sortRecurse();
+    }*/
+
+    register_time_var('unbalancedBT_SortRecurse');
+
+    // -----------------------------------------
+    // BALANCED
+
+    for ($i = 0; $i < $treeCount; $i++) {
+        $target = $targets[$i];
+        if ($bbt->findLoop($target) === null) {
+            var_dump("value not found", $target);
+            $bbt->print();
+        }
+    }
+
+    register_time_var('balancedBT_FindLoop');
+
+    for ($i = 0; $i < $treeCount; $i++) {
+        $target = $targets[$i];
+        if ($bbt->findRecurse($target) === null) {
+            var_dump("value not found", $target);
+            $bbt->print();
+        }
+    }
+
+    register_time_var('balancedBT_FindRecurse');
+
+    for ($i = 0; $i < $treeCount; $i++) {
+        $bbt->sortLoop();
+    }
+
+    register_time_var('balancedBT_SortLoop');
+
+    for ($i = 0; $i < $treeCount; $i++) {
+        $bbt->sortRecurse();
+    }
+
+    register_time_var('balancedBT_SortRecurse');
+
+    // ---------------------
+    // array
+
+    $seedValues = range(0, $treeSize - 1);
+
+    for ($i = 0; $i < $treeCount; $i++) {
+        $target = $targets[$i];
+        in_array($target, $seedValues);
+    }
+
+    register_time_var('in_array_sorted_values');
+
+    for ($i = 0; $i < $treeCount; $i++) {
+        sort($seedValues);
+    }
+
+    register_time_var('sort_sorted_values');
+
+    shuffle($seedValues);
+
+    for ($i = 0; $i < $treeCount; $i++) {
+        $target = $targets[$i];
+        in_array($target, $seedValues);
+    }
+
+    register_time_var('in_array_random_values');
+
+    for ($i = 0; $i < $treeCount; $i++) {
+        shuffle($seedValues);
+        sort($seedValues);
+    }
+
+    register_time_var('sort_random_values');
+
+    extract(get_time_diffs());
+
+    $str = <<<EOL
+Tree count: $treeCount
+Tree size: $treeSize
+build data time :               $buildDataDiff s
+---
+PHP userland:
+Unbalanced BT FindLoop():       $unbalancedBT_FindLoopDiff s
+Unbalanced BT FindRecurse():    $unbalancedBT_FindRecurseDiff s
+Unbalanced BT SortLoop():       $unbalancedBT_SortLoopDiff s
+Unbalanced BT SortRecurse():    $unbalancedBT_SortRecurseDiff s
+
+Balanced BT FindLoop():         $balancedBT_FindLoopDiff s
+Balanced BT FindRecurse():      $balancedBT_FindRecurseDiff s
+Balanced BT SortLoop():         $balancedBT_SortLoopDiff s
+Balanced BT SortRecurse():      $balancedBT_SortRecurseDiff s
+
+in_array with sorted values:    $in_array_sorted_valuesDiff s
+sort with sorted values:        $sort_sorted_valuesDiff s
+in_array with random values:    $in_array_random_valuesDiff s
+sort with random values:        $sort_random_valuesDiff s (note: time is for suffle + sort)
+EOL;
+    echo "$str";
+
 }
+else {
+    // -------
+    // extension
+    $seedValues = range(0, $treeSize - 1);
 
-$ebtSearchTime = microtime(true);
-$ebtSearchDiff = $ebtSearchTime - $bbstSearchTime;
+    $ubt = buildEBT($seedValues, false); // do not randomize values
 
-for ($i = 0; $i < $treeCount; $i++) {
-    $target = mt_rand(0, $treeSize-1);
-    in_array($target, $randomValues);
-}
+    echo "First extension tree built \n";
+    // bbt = balanced BT
 
-$inArraySearchTime = microtime(true);
-$inArraySearchDiff = $inArraySearchTime - $ebtSearchTime;
+    $bbt = buildEBT($seedValues); // values randomized before building the tree
+    echo "Second extension tree built \n";
 
-// -------------------
+    $bbt->balance();
+    echo "Second extension tree balanced \n";
 
-for ($i = 0; $i < $treeCount; $i++) {
-    $bt->toArray();
-}
+    $targets = range(0, $treeSize - 1);
+    shuffle($targets);
 
-$bstSortTime = microtime(true);
-$bstSortDiff = $bstSortTime - $inArraySearchTime;
+    register_time_var('ext_buildData');
 
-for ($i = 0; $i < $treeCount; $i++) {
-    $bst->toArray();
-}
+    for ($i = 0; $i < $treeCount; $i++) {
+        $target = $targets[$i];
+        if ($ubt->findLoop($target) === null) {
+            var_dump("value not found", $target);
+        }
+    }
 
-$bbstSortTime = microtime(true);
-$bbstSortDiff = $bbstSortTime - $bstSortTime;
+    register_time_var('ext_unbalancedBT_FindLoop');
 
-for ($i = 0; $i < $treeCount; $i++) {
-    $ebt->toArray();
-}
+    for ($i = 0; $i < $treeCount; $i++) {
+        $target = $targets[$i];
+        if ($ubt->findRecurse($target) === null) {
+            var_dump("value not found", $target);
+        }
+    }
 
-$ebtSortTime = microtime(true);
-$ebtSortDiff = $ebtSortTime - $bbstSortTime;
+    register_time_var('ext_unbalancedBT_FindRecurse');
 
-for ($i = 0; $i < $treeCount; $i++) {
-    sort($randomValues);
-}
+    for ($i = 0; $i < $treeCount; $i++) {
+        $ubt->sortLoop();
+    }
 
-$sortTime = microtime(true);
-$sortDiff = $sortTime - $ebtSortTime;
+    register_time_var('ext_unbalancedBT_SortLoop');
 
+    /*for ($i = 0; $i < $treeCount; $i++) {
+        $ubt->sortRecurse();
+    }*/
 
-// execute the C script and retrive the last line of its input (the one that begins by "C")
-// $cTime = exec("./c/builds/merge_sort $treeCount $treeSize | grep C");
-$cTime = "";
-// calculating C time with PHP whould gives a time slightly higher
+    // register_time_var('ext_unbalancedBT_SortRecurse');
 
-$str = <<<EOL
+    // -----------------------------------------
+    // BALANCED
+
+    for ($i = 0; $i < $treeCount; $i++) {
+        $target = $targets[$i];
+        if ($bbt->findLoop($target) === null) {
+            var_dump("value not found", $target);
+        }
+    }
+
+    register_time_var('ext_balancedBT_FindLoop');
+
+    for ($i = 0; $i < $treeCount; $i++) {
+        $target = $targets[$i];
+        if ($bbt->findRecurse($target) === null) {
+            var_dump("value not found", $target);
+        }
+    }
+
+    register_time_var('ext_balancedBT_FindRecurse');
+
+    for ($i = 0; $i < $treeCount; $i++) {
+        $bbt->sortLoop();
+    }
+
+    register_time_var('ext_balancedBT_SortLoop');
+
+    for ($i = 0; $i < $treeCount; $i++) {
+        $bbt->sortRecurse();
+    }
+
+    register_time_var('ext_balancedBT_SortRecurse');
+
+    extract(get_time_diffs());
+
+    $str = <<<EOL
 <pre>
-Array count: $treeCount
-Array size: $treeSize
-build data time :           $buildDataDiff s
+Tree count: $treeCount
+Tree size: $treeSize
+build data time :               $ext_buildDataDiff s
 ---
-php BT search :             $bstSearchDiff s
-php Balanced BT search :    $bbstSearchDiff s
-PHP Extension search :      $ebtSearchDiff s
-php built-in in_array() :   $inArraySearchDiff s
----
-php BT sort :               $bstSortDiff s
-php Balanced BT sort :      $bbstSortDiff s
-PHP Extension sort :        $ebtSortDiff s
-php built-in sort() :       $sortDiff s
-$cTime
+Zephir extension:
+Unbalanced BT FindLoop():       $ext_unbalancedBT_FindLoopDiff s
+Unbalanced BT FindRecurse():    $ext_unbalancedBT_FindRecurseDiff s
+Unbalanced BT SortLoop():       $ext_unbalancedBT_SortLoopDiff s
+Unbalanced BT SortRecurse():    $ext_unbalancedBT_SortRecurseDiff s
+
+Balanced BT FindLoop():         $ext_balancedBT_FindLoopDiff s
+Balanced BT FindRecurse():      $ext_balancedBT_FindRecurseDiff s
+Balanced BT SortLoop():         $ext_balancedBT_SortLoopDiff s
+Balanced BT SortRecurse():      $ext_balancedBT_SortRecurseDiff s
 </pre>
 EOL;
-echo "$str";
+    echo "$str";
+
+}

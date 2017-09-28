@@ -70,12 +70,9 @@ class BinaryTree
         $this->root = $root;
     }
 
-    public function traversel(Callable $callback, string $order = 'in')
+    public function traverseLoop(Callable $callback, string $order = 'in')
     {
-        if ($node === null) {
-            $node = $this->root;
-        }
-
+        $node = $this->root;
         $flags = [];
         $LEFT_VISITED = 1;
         $RIGHT_VISITED = 2;
@@ -146,7 +143,7 @@ class BinaryTree
      * @param int $order  "post" or "pre"
      * @return mixed
      */
-    public function traverser(Callable $callback, string $order = 'in', BinaryTreeNode $node = null)
+    public function traverseRecurse(Callable $callback, string $order = 'in', BinaryTreeNode $node = null)
     {
         if ($node === null) {
             $node = $this->root;
@@ -160,7 +157,7 @@ class BinaryTree
         }
 
         if ($node->left) {
-            $return = $this->traverse($callback, $order, $node->left);
+            $return = $this->traverseRecurse($callback, $order, $node->left);
             if ($return !== null) {
                 return $return;
             }
@@ -174,7 +171,7 @@ class BinaryTree
         }
 
         if ($node->right) {
-            $return = $this->traverse($callback, $order, $node->right);
+            $return = $this->traverseRecurse($callback, $order, $node->right);
             if ($return !== null) {
                 return $return;
             }
@@ -198,26 +195,27 @@ class BinaryTree
             return;
         }
 
-        $root = $this->root;
+        $node = $this->root;
+
         while (1) {
-            if ($newNode->key < $root->key) {
-                if ($root->left) {
-                    $root = $root->left;
+            if ($newNode->key < $node->key) {
+                if ($node->left) {
+                    $node = $node->left;
                     continue;
                 } else {
-                    $root->left = $newNode;
-                    $newNode->parent = $root;
+                    $node->left = $newNode;
+                    $newNode->parent = $node;
                     return;
                 }
             }
 
-            if ($newNode->key > $root->key) {
-                if ($root->right) {
-                    $root = $root->right;
+            if ($newNode->key > $node->key) {
+                if ($node->right) {
+                    $node = $node->right;
                     continue;
                 } else {
-                    $root->right = $newNode;
-                    $newNode->parent = $root;
+                    $node->right = $newNode;
+                    $newNode->parent = $node;
                     return;
                 }
             }
@@ -230,34 +228,52 @@ class BinaryTree
      * @param mixed $key
      * @return BinaryTreeNode|null
      */
-    public function find($key)
+    public function findLoop($key)
     {
-        $root = $this->root;
+        $node = $this->root;
 
         while (1) {
-            if ($key === $root->key) {
-                return $root;
+            if ($key === $node->key) {
+                return $node;
             }
 
-            if ($key < $root->key) {
-                if ($root->left) {
-                    $root = $root->left;
+            if ($key < $node->key) {
+                if ($node->left) {
+                    $node = $node->left;
                     continue;
                 }
-            } else {
-                if ($root->right) {
-                    $root = $root->right;
-                    continue;
-                }
+            } elseif ($node->right) {
+                $node = $node->right;
+                continue;
             }
 
             return null;
         }
     }
 
+    public function findRecurse($key, BinaryTreeNode $node = null)
+    {
+        if ($node === null) {
+            $node = $this->root;
+        }
+        if ($key === $node->key) {
+            return $node;
+        }
+
+        if ($key < $node->key) {
+            if ($node->left) {
+                return $this->findRecurse($key, $node->left);
+            }
+        } elseif ($node->right) {
+            return $this->findRecurse($key, $node->right);
+        }
+
+        return null;
+    }
+
     public function balance()
     {
-        $this->nodesPerKey = $this->sortr();
+        $this->sortLoop();
         $sortedKeys = array_keys($this->nodesPerKey);
         $this->root = $this->_balance($sortedKeys);
     }
@@ -274,24 +290,24 @@ class BinaryTree
             return null;
         }
 
-        $nodesPerKey = $this->nodesPerKey;
+        $nodesPerKey = &$this->nodesPerKey;
         $node = null;
 
         if ($size === 1) {
             $node = $nodesPerKey[ $sortedKeys[0] ];
-            // $node->parent = null;
-            // $node->left = null;
-            // $node->right = null;
+            $node->parent = null;
+            $node->left = null;
+            $node->right = null;
         }
         elseif ($size === 2) {
             $node = $nodesPerKey[ $sortedKeys[1] ];
-            // $node->parent = null;
-            // $node->right = null;
+            $node->parent = null;
+            $node->right = null;
 
             $node->left = $nodesPerKey[ $sortedKeys[0] ];
             $node->left->parent = $node;
-            // $node->left->left = null;
-            // $node->left->right = null;
+            $node->left->left = null;
+            $node->left->right = null;
         }
         else { // $size >= 3
             $middleId = (int)($size / 2);
@@ -300,7 +316,7 @@ class BinaryTree
             $middleKey = array_shift($right);
 
             $node = $nodesPerKey[$middleKey];
-            // $node->parent = null;
+            $node->parent = null;
 
             $node->left = $this->_balance($sortedKeys);
             $node->left->parent = $node;
@@ -312,12 +328,12 @@ class BinaryTree
         return $node;
     }
 
-    public function sortl(): array
+    public function sortLoop()
     {
         // it is twice slower to use $this->traverse() than a custom loop
-        $a = [];
         $flags = [];
         $node = $this->root;
+        $this->nodesPerKey = [];
 
         while ($node !== null) {
             $key = $node->key;
@@ -338,7 +354,7 @@ class BinaryTree
             if ($flags[$key] < 2) {
                 $flags[$key] = 2;
                 
-                $a[$key] = $node;
+                $this->nodesPerKey[$key] = $node;
             }
 
             if ($flags[$key] < 3) {
@@ -352,33 +368,30 @@ class BinaryTree
 
             $node = $node->parent;
         }
-
-        return $a;
     }
 
-    public function sortr(BinaryTreeNode $node = null): void
+    public function sortRecurse(BinaryTreeNode $node = null)
     {
-        // it is twice slower to use $this->traverse() than a custom loop
         if ($node === null) {
             $node = $this->root;
             $this->nodesPerKey = [];
         }
 
         if ($node->left) {
-            $this->sortr($node->left);
+            $this->sortRecurse($node->left);
         }
 
-        $this->nodesPerKey[$key] = $node;
+        $this->nodesPerKey[$node->key] = $node;
 
         if ($node->right) {
-            $this->sortr($node->right);
+            $this->sortRecurse($node->right);
         }
     }
 
     public function print()
     {
         $a = [];
-        $this->traverser(
+        $this->traverseLoop(
             function (BinaryTreeNode $node) use (&$a) {
                 $nodeInfo = $node->toArray();
                 
@@ -395,5 +408,16 @@ class BinaryTree
         , 'post');
 
         echo '<pre>' . print_r($a[$this->root->key], true) . '</pre>';
+    }
+
+    public function destroy()
+    {
+        foreach ($this->nodesPerKey as $node) {
+            unset($node->parent);
+            unset($node->left);
+            unset($node->right);
+        }
+        unset($this->nodesPerKey);
+        unset($this->root);
     }
 }

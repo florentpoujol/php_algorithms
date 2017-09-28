@@ -27,31 +27,23 @@ class BinaryTreeNode
      */
     public right;
 
-    public function __construct(value = null, key = null, parent = null, left = null, right = null)
+    public function __construct(int! value = null)
     {
         let this->value = value;
-        //var theKey = key;
-        if (key == null) {
-            let key = value;
-        }
-        let this->key = key;
-        let this->parent = parent;
-        let this->left = left;
-        let this->right= right;
+        let this->key = value;
     }
 
     public function toArray() -> array
     {
-        var parent = null;
-        if (this->parent) {
-            let parent = this->parent;
-            let parent = parent->key;
+        var parentKey = null;
+        if (this->parent !== null) {
+            var _parent = this->parent;
+            let parentKey = _parent->key;
         }
-        array a = [
+        return [
             "k" : this->key, "v" : this->value,
-            "p" : parent,
+            "p" : parentKey,
             "l" : null, "r" : null
         ];
-        return a;
     }
 }

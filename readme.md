@@ -134,57 +134,117 @@ C:                      1.029710 s
 
 ### Binary Tree
 
-It take 5 seconds to build an unbalanced tree from 10000 sorted values.
-Only 0.04 s to build from random values. (0.02 s to balance).
+In each cases, only two trees are created. One totally unbalanced, and one totally balanced (complete).  
+The `find` function are tested by repeatedly searching for the same set of targets.  
+I experimented a bit by creating a looping and recursive version or each find and sort functions, to see which perform better.
 
+PHP userland:
 ```
-Array count: 50
-Array size: 10000
-build data time :           0.10264301300049 s
-php BT search :             0.00020813941955566 s
-php Balanced BT search :    0.00013303756713867 s
-php built-in in_array() :   0.00026392936706543 s
-php BT sort :               0.40845394134521 s
-php Balanced BT sort :      0.39661407470703 s
-php built-in sort() :       0.034395933151245 s
+Tree count: 100
+Tree size: 33000
+build data time :               2.6075768470764 s
+---
+Unbalanced BT FindLoop():       0.00073504447937012 s
+Unbalanced BT FindRecurse():    0.0024600028991699 s
+Unbalanced BT SortLoop():       3.5795381069183 s
+Unbalanced BT SortRecurse():    3.1952500343323 s  Gives a segfault when tree size is > 33000
 
-Array count: 30
-Array size: 100000
-build data time :           3.1138999462128 s
-php BT search :             0.00017213821411133 s
-php Balanced BT search :    0.00014305114746094 s
-php built-in in_array() :   0.0014889240264893 s
-php BT sort :               12.102861881256 s
-php Balanced BT sort :      12.167613983154 s
-php built-in sort() :       0.2691650390625 s
+Balanced BT FindLoop():         0.00031495094299316 s
+Balanced BT FindRecurse():      0.00077199935913086 s
+Balanced BT SortLoop():         4.2059578895569 s (1.3 micro sec / node)
+Balanced BT SortRecurse():      4.5488350391388 s
+
+in_array with sorted values:    0.00043106079101562 s
+in_array with random values:    0.001957893371582 s
+sort with sorted values:        0.24364900588989 s
 
 
-Array count: 10
-Array size: 500000
-build data time :           94.416689157486 s
-php BT search :             0.00007700 s (7.7009201049805E-5 s)
-php Balanced BT search :    0.00003290 s (3.2901763916016E-5 s)
-php built-in in_array() :   0.00006008 s (6.0081481933594E-5 s)
-php BT sort :               95.364817857742 s
-php Balanced BT sort :      92.899277210236 s
-php built-in sort() :       0.54810690879822 s
+Tree count: 100
+Tree size: 70000    Building an unsorted tree would give a segfault over that number
+build data time :               11.158700942993 s
+---
+Unbalanced BT FindLoop():       0.00080418586730957 s
+Unbalanced BT FindRecurse():    0.0034639835357666 s
+Unbalanced BT SortLoop():       13.770484924316 s
+Unbalanced BT SortRecurse():    No value (has been commented out)
 
-Array count: 1
-Array size: 500000
-build data time :           95.854732036591 s
-php BT search :             2.0027160644531E-5 s
-php Balanced BT search :    5.9604644775391E-6 s
-php built-in in_array() :   8.8930130004883E-5 s
-php BT sort :               9.8844139575958 s
-php Balanced BT sort :      9.3771319389343 s
-php built-in sort() :       0.099236011505127 s
+Balanced BT FindLoop():         0.00031590461730957 s
+Balanced BT FindRecurse():      0.00084114074707031 s
+Balanced BT SortLoop():         19.596042871475 s (2.8 micro sec / node)
+Balanced BT SortRecurse():      18.877624988556 s
 
-Incremental build time :
-Tree size   BT   Balanced BT    Total
-100000      1.2     1.8         3.0  s
-150000      2.9     4.2         7.2  s
-200000      5.4     7.5         12.9 s
-250000      8.8     11.9        20.8 s
-
+in_array with sorted values:    0.00083398818969727 s
+in_array with random values:    0.0042519569396973 s
+sort with sorted values:        0.57456016540527 s
 ```
- 
+
+Zephir:
+```
+Tree count: 1
+Tree size: 6000   
+build data time :               0.12625503540039 s
+---
+Unbalanced BT FindLoop():       0.00018906593322754 s
+Unbalanced BT FindRecurse():    0.005328893661499 s
+Unbalanced BT SortLoop():       0.0057790279388428 s
+Unbalanced BT SortRecurse():    0.15836095809937 s   Give a segfault when tree size > 6000 and tree count > 1
+
+Balanced BT FindLoop():         2.1934509277344E-5 s
+Balanced BT FindRecurse():      1.3113021850586E-5 s
+Balanced BT SortLoop():         0.0059330463409424 s (0.99 micro sec / node)
+Balanced BT SortRecurse():      0.0039708614349365 s
+
+Tree count: 1
+Tree size: 40000
+build data time :               3.6859300136566 s
+---
+Unbalanced BT FindLoop():       0.00082898139953613 s
+Unbalanced BT FindRecurse():    0.1431028842926 s
+Unbalanced BT SortLoop():       0.037585020065308 s
+Unbalanced BT SortRecurse():    No data (commented out)
+
+Balanced BT FindLoop():         2.4080276489258E-5 s
+Balanced BT FindRecurse():      2.9087066650391E-5 s
+Balanced BT SortLoop():         0.049489974975586 s (1.23 micro sec / node)
+Balanced BT SortRecurse():      0.044035911560059 s
+```
+
+C:
+```
+Tree count: 100 
+Tree size: 70000 
+--
+Unbalanced BT Build time:      9.030995 s
+Unbalanced BT FindLoop:        0.013572 s
+Unbalanced BT FindRecurse:     0.021325 s
+Unbalanced BT SortLoop:        0.111348 s
+Unbalanced BT SortRecurse:     0.067735 s (9.6 nano sec / node)
+
+Balanced BT Build:            0.026317 s
+Balanced BT Find Loop:        0.000037 s (0.37 nano sec to find the target node)
+Balanced BT Find Recurse:     0.000081 s
+Balanced BT sort Loop:        0.415712 s (0.059 micro sec / node)
+Balanced BT sort Recurse:     0.135533 s (0.019 micro sec / node)
+
+
+Tree count: 200 
+Tree size: 1000000 
+--
+Balanced BT Build time:       0.879148 s
+Balanced BT Find Loop:        0.000218 s 
+Balanced BT Find Recurse:     0.000210 s
+(average of 1 nano sec to find the desired node)
+
+Balanced BT sort Loop:        20.691364 s (0.1 micro sec / node)
+Balanced BT sort Recurse:     20.165499 s
+```
+
+In PHP and Zephir, traversing the tree with recursive functions is not necessarily slower. 
+It is always slower for the Find() function but typically a little faster when you have to traverse the whole tree.  
+However they are always the first to give segfault errors.
+
+Looping through (the Sort functions) unbalanced trees is consistently a little faster than the balanced tree.
+
+As with merge and quick sort, Zephir is up to two times faster but fails with segfault error with much smaller trees, not sure why.
+
+C is as expected much faster. In this last example (Sort a balanced tree), it is at least 10 to 30 times faster than the PHP userland.

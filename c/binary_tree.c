@@ -16,7 +16,7 @@ typedef struct BinaryTreeNode {
 } BinaryTreeNode;
 
 
-BinaryTreeNode *find(BinaryTreeNode *root, const int key)
+BinaryTreeNode *findl(BinaryTreeNode *root, const int key)
 {
     while (1) 
     {
@@ -29,15 +29,31 @@ BinaryTreeNode *find(BinaryTreeNode *root, const int key)
                 root = root->left;
                 continue;
             }
-        } else { // key > root->key
-            if (root->right) {
-                root = root->right;
-                continue;
-            }
+        } else if (root->right) {
+            root = root->right;
+            continue;
         }
 
         return NULL;
     }
+}
+
+
+BinaryTreeNode *findr(BinaryTreeNode *root, const int key)
+{
+    if (key == root->key) {
+        return root;
+    }
+
+    if (key < root->key) {
+        if (root->left) {
+            return findr(root->left, key);
+        }
+    } else if (root->right) {
+        return findr(root->right, key);
+    }
+
+    return NULL;
 }
 
 
@@ -369,6 +385,9 @@ int main(int argc, char *argv[])
     // note: only two trees are created
     // but find and sort operations are performed [treeCount] times on each
     BinaryTreeNode *tree = malloc(sizeof(BinaryTreeNode));
+    
+    // createTree(tree, treeSize, 0);
+    
     createTree(tree, treeSize, 0);
     // tree = balance(tree);
 
@@ -406,15 +425,27 @@ int main(int argc, char *argv[])
     {
         int target = rand() % treeSize;
         BinaryTreeNode *node;
-        node = find(tree, target);
+        node = findl(tree, target);
 
         if (! node) {
-            printf("pas trouvé! %d ", target);
+            printf("pas trouvé l! %d ", target);
         }
     }
 
+    REGISTER_TIME(findlEndTime)
 
-    REGISTER_TIME(findEndTime)
+    for (int i = 0; i < treeCount; ++i)
+    {
+        int target = rand() % treeSize;
+        BinaryTreeNode *node;
+        node = findr(tree, target);
+
+        if (! node) {
+            printf("pas trouvé r! %d ", target);
+        }
+    }
+
+    REGISTER_TIME(findrEndTime)
 
     // bt_free(tree);
     // bt_free(tree2);
@@ -422,14 +453,16 @@ int main(int argc, char *argv[])
     double buildDiff = getDiff(startTime, buildEndTime);
     double sortlDiff = getDiff(buildEndTime, sortlEndTime);
     double sortrDiff = getDiff(sortlEndTime, sortrEndTime);
-    double findDiff = getDiff(sortrEndTime, findEndTime);
+    double findlDiff = getDiff(sortrEndTime, findlEndTime);
+    double findrDiff = getDiff(findlEndTime, findrEndTime);
 
     printf("Pass count: %d \n", treeCount);
     printf("Tree size: %d \n", treeSize);
     printf("Build time:            %f s\n", buildDiff);
+    printf("Find Loop time:        %f s\n", findlDiff);
+    printf("Find Recurse time:     %f s\n", findrDiff);
     printf("sort Loop time:        %f s\n", sortlDiff);
     printf("sort Recurse time:     %f s\n", sortrDiff);
-    printf("Find time:             %f s\n", findDiff);
 
 }
 

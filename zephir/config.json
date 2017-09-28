@@ -57,7 +57,7 @@
     "description": "A collection of Sort and Search functions",
     "author": "Florent Poujol",
     "version": "0.0.1",
-    "verbose": true,
+    "verbose": false,
     "requires": {
         "extensions": []
     }
