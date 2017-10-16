@@ -7,66 +7,114 @@ This project is the occasion for me to implement various search and sort algorit
 - Build Zephir extension with:
 
 ```
-./build z
+./build.sh z
 ```
 
 - Build C script with:
 
 ```
-./build c nameofthefile
+./build.sh c nameofthefile
 # The C script must be in `c/` folder and the build is created in the `c/builds/` folder.
+# or
+./build.sh cc nameofthefile
 ```
 
 - Run C or PHP script with:
 
 ```
-./run c nameofthefile arrayCount arraySize
-./run php nameofthefile arrayCount arraySize
-# arrayCount and arraySize must be numeric.
+./run.sh c nameofthefile testCount arraySize
+./run.sh php nameofthefile testCount arraySize
+# testCount and arraySize must be numeric.
 ```
 
 ## Benchmarks
 
-The benchmarks are done when executing the PHP (7.0.x) script via cli and passing two arguments: the array count and the array size.
+The benchmarks are done when executing the PHP (7.1.10) script via cli and passing two arguments: the test count and the array size.
 
-Each functions (the PHP one from the same file, the one from the PHP extension, the C one and the built-in sort() or in_array()) must sort or search through [array count] arrays of [array size] elements each.
+Each functions (the PHP one from the same file, the one from the PHP extension, the C one and the built-in sort() or in_array()) must sort or search through [test count] arrays of [array size] elements each.
 
-The time it takes each functions to process all arrays is mesured and displayed.
+The time it takes each functions to process all arrays is measured and displayed.
 
-### Takeaway
-
-- The PHP (userland) function is by far the slowest (20 times slower than the built-in PHP functions).
-- The function from the extension is at least 50% faster for a very similar code.
-- The C function, despite using a probably "naive" implementation of each algo is almost the fastest.
-- The PHP built-in PHP function is the fastest, only slighly faster than the C function but usually 10 times faster than the userland.
 
 ### Binary search
 
-Here, as the code is very simple, the extension is only marginally faster than the userland.
 
 ```
-Array count: 100
-Array size: 100000
-php userland:           0.07220196723938 s
-php extension (zephir): 0.071554899215698 s
-php built-in in_array:  0.010440111160278 s
-C:                      0.000060 s
-
-Array count: 100
+Array count: 50 
 Array size: 1000000
-php userland:           1.180379152298 s
-php extension (zephir): 1.1114928722382 s
-php built-in in_array:  0.099914073944092 s
-C:                      0.000081 s
+
+php BS1:        0.456 s      naive implementation that uses array_slice()
+php BS2:        0.000176 s   pass start and end ids as arg (doesn't resize array)
+php BS3:        0.000120 s   pass start id and size as arg (recursive)
+php BS4:        0.0000908 s  pass start id and size as arg (loop)
+
+zephir BS1:     0.458 s      same implementation as PHP BS1
+zephir BS2:     0.000240 s   same implementation as PHP BS2...
+zephir BS3:     0.000172 s   ...
+zephir BS4:     0.0000188 s
+
+PHP-CPP BS3:    0.411 s      same implementation as PHP BS3 and Zephir BS3
+PHP-CPP BS4:    0.410 s      ...
+
+php in_array:   0.0449 s
+
+C BS1:          0.000012 s  recursive
+C BS2:          0.000010 s  loop
+
+// --------------------------------------------------
 
 Array count: 100
 Array size: 2000000
-php userland:           2.1361570358276 s
-php extension (zephir): 2.1351580619812 s
-php built-in in_array:  0.20601606369019 s
-C:                      0.000089 s
 
+php BS1:        1.8360619544983 s
+php BS2:        0.00032520294189453 s
+php BS3:        0.00023078918457031 s
+php BS4:        0.00016212463378906 s
+
+zephir BS1:     1.8355000019073 s
+zephir BS2:     0.00043201446533203 s
+zephir BS3:     0.00033187866210938 s
+zephir BS4:     0.00005698204040527 s
+
+PHP-CPP BS3     1.6163167953491 s
+PHP-CPP BS4:    1.6159880161285 s
+
+php in_array:   0.19458818435669 s
+
+C BS1:          0.000037 s
+C BS2:          0.000025 s
+
+// --------------------------------------------------
+
+Array count: 200
+Array size: 4000000
+
+php BS1:        7.1751728057861 s
+php BS2:        0.00063014030456543 s
+php BS3:        0.00043797492980957 s
+php BS4:        0.00029206275939941 s
+
+zephir BS1:     7.1741719245911 s
+zephir BS2:     0.00083804130554199 s
+zephir BS3:     0.00066995620727539 s
+zephir BS4:     8.2969665527344E-5 s
+
+PHP-CPP BS3     6.3428328037262 s
+PHP-CPP BS4:    6.3466591835022 s
+
+php in_array:   0.7558650970459 s
+
+C BS1:          0.000097 s
+C BS2:          0.000040 s
 ```
+
+The zephir code has the same implementation as PHP and very similar times, except for the loop implementation (zephir BS4) which is 5 to 10 times faster than the recursive one.
+
+The fastest PHP implementation is 500 times faster than the built-in `in_array()`, which still is 10 times faster than the naive implementation.
+
+C is by far the fastest. The loop implementation can be up to twice faster than the recursive one.
+
+
 
 ### Merge sort
 

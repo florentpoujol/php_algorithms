@@ -1,18 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <time.h>
-
-
-void display(int array[], int size, char *text)
-{
-    int i;
-    printf("%s size=%d : ", text, size);
-    for (i = 0; i < size; i++) {
-
-        printf("%d ", array[i]);
-    }
-    printf("\n");
-}
+#include "utils.c"
 
 
 int binary_search(int *array, const int size, const int target)
@@ -36,7 +24,35 @@ int binary_search(int *array, const int size, const int target)
         return binary_search(array, middleId, target);
     }
 
-    return binary_search(pmiddle, size - middleId, target);    
+    return binary_search(pmiddle + 1, size - middleId - 1, target);    
+}
+
+
+int binary_search_loop(int *start, int size, const int target)
+{  
+    int *pmiddle = 0;
+
+    while (size > 0) {
+        if (size == 1) {
+            return (target == *start);
+        }
+
+        int middleId = (int)(size / 2);
+        pmiddle = (start + middleId);
+        
+        if (target == *pmiddle) {
+            return 1;
+        }
+
+        if (target < *pmiddle) {
+            size = middleId;
+        } else {
+            start = pmiddle + 1;
+            size -= middleId - 1;
+        }
+    }
+
+    return 0;
 }
 
 
@@ -44,42 +60,50 @@ int main(int argc, char *argv[])
 {
     int arrayCount = atoi(argv[1]);
     int arraySize = atoi(argv[2]);
-    int total = arraySize * arrayCount;
     
-    int *data = malloc(sizeof(int) * total);
-    int i, j = 0;
+    int *array = malloc(sizeof(int) * arraySize);
+    int *targets = malloc(sizeof(int) * arrayCount);
+    
     srand(time(NULL));
     rand(); rand(); rand();
+    int i;
 
-    for (i = 0; i < total; i++) {
-        if (i % arraySize == 0) {
-            j = 0;
-        }
-
-        data[i] = j;
-        j++;
+    for (i = 0; i < arraySize; i++) {
+        array[i] = i;
+    }
+    for (i = 0; i < arrayCount; i++) {
+        targets[i] = rand() % arraySize;
     }
 
-    struct timespec start, end;
-    clock_gettime(CLOCK_MONOTONIC_RAW, &start);
+    REGISTER_TIME(start, "start");
 
     for (i = 0; i < arrayCount; i++) {
-        int target = rand() % arraySize;
-        if (! binary_search( (data + (i * arraySize)), arraySize, target)) {
-            printf("wrong target=%d \n", target);
-            display( (data + (i * arraySize)), arraySize, "");
+        if (! binary_search(array, arraySize, targets[i])) {
+            printf("wrong 1 target=%d \n", targets[i]);
+            // array_print_inline(array, arraySize, "");
         }
-        // binary_search((data + i), arraySize, targets[i]);
+        // binary_search((array + i), arraySize, targets[i]);
     }
 
-    free(data);
+    REGISTER_TIME(bs1, "bs1");
 
-    clock_gettime(CLOCK_MONOTONIC_RAW, &end);
-    double diffSec = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1E9;
+    for (i = 0; i < arrayCount; i++) {
+        if (! binary_search_loop(array, arraySize, targets[i])) {
+            printf("wrong 2 target=%d \n", targets[i]);
+            // array_print_inline(array, arraySize, "");
+        }
+        // binary_search((array + i), arraySize, targets[i]);
+    }
+
+    REGISTER_TIME(bs2, "bs2");
+
+    double bs1Diff = getDiff(start, bs1);
+    double bs2Diff = getDiff(bs1, bs2);
 
     printf("Array count: %d \n", arrayCount);
     printf("Array size: %d \n", arraySize);
-    printf("C:                      %f s\n", diffSec);
+    printf("C BS1:                  %f s\n", bs1Diff);
+    printf("C BS2:                  %f s\n", bs2Diff);
 
     return 0;
 }

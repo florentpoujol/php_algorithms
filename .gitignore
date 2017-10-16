@@ -10,3 +10,6 @@ zephir/.temp/
 zephir/ext/
 zephir/*.log
 zephir/*.swp
+
+cpp/*.o
+cpp/*.so

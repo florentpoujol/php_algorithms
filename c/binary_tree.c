@@ -388,8 +388,7 @@ int main(int argc, char *argv[])
     
     // createTree(tree, treeSize, 0);
     
-    createTree(tree, treeSize, 0);
-    // tree = balance(tree);
+    createTree(tree, treeSize, 1);
 
 
     int lastSortedKeyId = 0;

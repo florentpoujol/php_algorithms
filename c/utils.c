@@ -1,8 +1,10 @@
-
 #include <stdlib.h>
 #include <time.h>
+#include <string.h>
 
-#define REGISTER_TIME(varName) struct timespec varName; \
+#define REGISTER_TIME(varName, s) \
+    printf("Regsiter time %s \n", s); \
+    struct timespec varName; \
     clock_gettime(CLOCK_MONOTONIC_RAW, &varName);
 
 
