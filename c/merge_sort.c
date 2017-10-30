@@ -1,18 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
-
-
-void display(int array[], int size, char *text)
-{
-    int i;
-    printf("%s size=%d : ", text, size);
-    for (i = 0; i < size; i++) {
-
-        printf("%d ", array[i]);
-    }
-    printf("\n");
-}
+#include "utils.c"
 
 
 void merge_sort(int *left, const int size)
@@ -26,7 +15,7 @@ void merge_sort(int *left, const int size)
         merge_sort(left, middleId);
     }
 
-    int *right = (left + middleId); 
+    int *right = (left + middleId);
     const int rightSize = size - middleId;
     if (rightSize > 1) {
         merge_sort(right, rightSize);
@@ -50,7 +39,7 @@ void merge_sort(int *left, const int size)
     // first values we didn't touched > temp array > remaining values in right
 
     int *tmpArray; 
-    int leftId = 0, rightId = 0, tmpId = 0;
+    register int leftId = 0, rightId = 0, tmpId = 0;
     int firstUnsortedId = -1;
 
     while (leftId < middleId && rightId < rightSize) 
@@ -62,7 +51,7 @@ void merge_sort(int *left, const int size)
                 tmpArray[ tmpId++ ] = left[leftId];
             }
             
-            leftId++;
+            ++leftId;
         } 
         else
         {
@@ -78,19 +67,17 @@ void merge_sort(int *left, const int size)
     }
 
     if (firstUnsortedId > -1) {
-        int i;
         // add the remaining left values to the tmpArray
-        for (i = leftId; i < middleId; i++) {
-            tmpArray[ tmpId++ ] = left[i];
+        while (leftId < middleId) {
+            tmpArray[ tmpId++ ] = left[ leftId++ ];
         }
         // the remaining values in right are already at the end of left
         // so no need to add them to tmpArray before coping tmpArray in left
 
         // copy back the tmpArray inside left after the first values that we didn't moved
-        int tmpArraySize = (middleId + rightId) - firstUnsortedId;
-        for (i = 0; i < tmpArraySize; ++i)
+        for (register int i = 0; i < tmpId; ++i) // tmpId is the size of tmpArray
         {
-            left[ firstUnsortedId + i ] = tmpArray[i];
+            left[ firstUnsortedId++ ] = tmpArray[ i ];
         }
 
         free(tmpArray);
@@ -100,51 +87,49 @@ void merge_sort(int *left, const int size)
 }
 
 
-int check(int *array, int size)
-{
-    for (int i=1; i < size; i++) { 
-        if (array[i-1] > array[i]) {
-            return 0;
-        }
-    }
-    return 1;
-}
-
 
 int main(int argc, char *argv[]) 
 {
     int arrayCount = atoi(argv[1]);
     int arraySize = atoi(argv[2]);
-    int total = arraySize * arrayCount;
     
-    int *data = malloc(sizeof(int) * total);
+    int *array = malloc(sizeof(int) * arraySize);
     int i;
-    srand(time(NULL));
-    rand(); rand(); rand();
+    srand(time(NULL)); // needed for array_shuffle()
 
-    for (i = 0; i < total; i++) { 
-        data[i] = rand() % arraySize;
+    for (i = 0; i < arraySize; i++) { 
+        array[i] = i;
     }
+    array_shuffle(array, arraySize);
 
-    struct timespec start, end;
-    clock_gettime(CLOCK_MONOTONIC_RAW, &start);
+    struct timespec shuffle_start, shuffle_end;
+    double shuffle_total = 0.0;
 
-    for (i = 0; i < arrayCount; i++) {
-        int *a = (data + (i * arraySize));
-        // display(a, arraySize, "AVANT: ");
-        merge_sort(a, arraySize);
-        // if (! check(a, arraySize)) {
-        //     display(a, arraySize, "ERROR: ");
+    REGISTER_TIME(start, "start");
+
+    for (i = 0; i < arrayCount; i++) {        
+        merge_sort(array, arraySize);
+        // if (! array_sorted(array, arraySize)) {
+        //     printf("ERROR array not sorted \n");
+        //     // display(array, arraySize, "ERROR: ");
         // }
+        // note: when the 4 lines above is decommented, the mesured time is actually smaller...
+
+        clock_gettime(CLOCK_MONOTONIC_RAW, &shuffle_start);
+        array_shuffle(array, arraySize);
+        clock_gettime(CLOCK_MONOTONIC_RAW, &shuffle_end);
+        shuffle_total += getDiff(shuffle_start, shuffle_end);
     }
 
-    clock_gettime(CLOCK_MONOTONIC_RAW, &end);
-    double diffSec = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1E9;
+    REGISTER_TIME(end, "merge_sort");
+
+    
+    double diffSec = getDiff(start, end) - shuffle_total;
 
     printf("Array count: %d \n", arrayCount);
     printf("Array size: %d \n", arraySize);
     printf("C:                      %f s\n", diffSec);
+    printf("C (shuffle time):       %f s\n", shuffle_total);
 
     return 0;
 }
-

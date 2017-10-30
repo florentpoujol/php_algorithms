@@ -3,7 +3,7 @@
 #include "utils.c"
 
 
-int binary_search(int *array, const int size, const int target)
+int binary_search_rec(int *array, const int size, const int target)
 {  
     if (size <= 0) {
         return 0;
@@ -21,10 +21,10 @@ int binary_search(int *array, const int size, const int target)
     }
 
     if (target < *pmiddle) {
-        return binary_search(array, middleId, target);
+        return binary_search_rec(array, middleId, target);
     }
 
-    return binary_search(pmiddle + 1, size - middleId - 1, target);    
+    return binary_search_rec(pmiddle + 1, size - middleId - 1, target);    
 }
 
 
@@ -78,32 +78,32 @@ int main(int argc, char *argv[])
     REGISTER_TIME(start, "start");
 
     for (i = 0; i < arrayCount; i++) {
-        if (! binary_search(array, arraySize, targets[i])) {
-            printf("wrong 1 target=%d \n", targets[i]);
+        if (! binary_search_rec(array, arraySize, targets[i])) {
+            printf("wrong rec target=%d \n", targets[i]);
             // array_print_inline(array, arraySize, "");
         }
         // binary_search((array + i), arraySize, targets[i]);
     }
 
-    REGISTER_TIME(bs1, "bs1");
+    REGISTER_TIME(rec, "rec");
 
     for (i = 0; i < arrayCount; i++) {
         if (! binary_search_loop(array, arraySize, targets[i])) {
-            printf("wrong 2 target=%d \n", targets[i]);
+            printf("wrong loop target=%d \n", targets[i]);
             // array_print_inline(array, arraySize, "");
         }
         // binary_search((array + i), arraySize, targets[i]);
     }
 
-    REGISTER_TIME(bs2, "bs2");
+    REGISTER_TIME(loop, "loop");
 
-    double bs1Diff = getDiff(start, bs1);
-    double bs2Diff = getDiff(bs1, bs2);
+    double recDiff = getDiff(start, rec);
+    double loopDiff = getDiff(rec, loop);
 
     printf("Array count: %d \n", arrayCount);
     printf("Array size: %d \n", arraySize);
-    printf("C BS1:                  %f s\n", bs1Diff);
-    printf("C BS2:                  %f s\n", bs2Diff);
+    printf("C (rec):         %f s\n", recDiff);
+    printf("C (loop):        %f s\n", loopDiff);
 
     return 0;
 }

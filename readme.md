@@ -40,77 +40,65 @@ The time it takes each functions to process all arrays is measured and displayed
 
 
 ```
-Array count: 50 
+Array count: 50
 Array size: 1000000
 
-php BS1:        0.456 s      naive implementation that uses array_slice()
-php BS2:        0.000176 s   pass start and end ids as arg (doesn't resize array)
-php BS3:        0.000120 s   pass start id and size as arg (recursive)
-php BS4:        0.0000908 s  pass start id and size as arg (loop)
+php simple:      0.462 s     naive implementation that uses array_slice()
+php opti:        0.000138 s  pass start id and size as arg (loop)
 
-zephir BS1:     0.458 s      same implementation as PHP BS1
-zephir BS2:     0.000240 s   same implementation as PHP BS2...
-zephir BS3:     0.000172 s   ...
-zephir BS4:     0.0000188 s
+php in_array:    0.0482 s
 
-PHP-CPP BS3:    0.411 s      same implementation as PHP BS3 and Zephir BS3
-PHP-CPP BS4:    0.410 s      ...
+zephir simple:   0.468 s
+zephir opti:     0.0000851 s
 
-php in_array:   0.0449 s
+CPP opti (rec):  0.419 s     recursive version
+CPP opti (loop): 0.416 s
 
-C BS1:          0.000012 s  recursive
-C BS2:          0.000010 s  loop
+C (rec):         0.000008 s
+C (loop):        0.000006 s
 
 // --------------------------------------------------
 
 Array count: 100
 Array size: 2000000
 
-php BS1:        1.8360619544983 s
-php BS2:        0.00032520294189453 s
-php BS3:        0.00023078918457031 s
-php BS4:        0.00016212463378906 s
+php simple:      1.800 s
+php opti:        0.000234 s
 
-zephir BS1:     1.8355000019073 s
-zephir BS2:     0.00043201446533203 s
-zephir BS3:     0.00033187866210938 s
-zephir BS4:     0.00005698204040527 s
+php in_array:    0.170 s
 
-PHP-CPP BS3     1.6163167953491 s
-PHP-CPP BS4:    1.6159880161285 s
+zephir simple:   1.802 s
+zephir opti:     0.0000958 s
 
-php in_array:   0.19458818435669 s
+CPP opti (rec):  1.608 s
+CPP opti (loop): 1.601 s
 
-C BS1:          0.000037 s
-C BS2:          0.000025 s
+C (rec):         0.000022 s
+C (loop):        0.000014 s
 
 // --------------------------------------------------
 
 Array count: 200
-Array size: 4000000
+Array size: 3000000
 
-php BS1:        7.1751728057861 s
-php BS2:        0.00063014030456543 s
-php BS3:        0.00043797492980957 s
-php BS4:        0.00029206275939941 s
+php simple:      5.457 s
+php opti:        0.000451 s
 
-zephir BS1:     7.1741719245911 s
-zephir BS2:     0.00083804130554199 s
-zephir BS3:     0.00066995620727539 s
-zephir BS4:     8.2969665527344E-5 s
+php in_array:    0.566 s
 
-PHP-CPP BS3     6.3428328037262 s
-PHP-CPP BS4:    6.3466591835022 s
+zephir simple:   5.453 s
+zephir opti:     0.000174 s
 
-php in_array:   0.7558650970459 s
+CPP opti (rec):  4.851 s
+CPP opti (loop): 4.824 s
 
-C BS1:          0.000097 s
-C BS2:          0.000040 s
+C (rec):         0.000062 s
+C (loop):        0.000035 s
 ```
 
-The zephir code has the same implementation as PHP and very similar times, except for the loop implementation (zephir BS4) which is 5 to 10 times faster than the recursive one.
+The zephir code has the same implementation as PHP and very similar times, except for the loop implementation which is about twice faster.
 
-The fastest PHP implementation is 500 times faster than the built-in `in_array()`, which still is 10 times faster than the naive implementation.
+The fastest PHP implementation is up to several hundreds times faster than the built-in `in_array()`, which still is 10 times faster than the naive implementation.
 
 C is by far the fastest. The loop implementation can be up to twice faster than the recursive one.
 
@@ -119,33 +107,63 @@ C is by far the fastest. The loop implementation can be up to twice faster than 
 ### Merge sort
 
 ```
-Array count: 50  
-Array size: 10000  
-PHP userland:           1.5883460044861 s  
-PHP extension (zephir): 0.75912380218506 s  
-PHP built-in sort:      0.064247131347656 s  
-C:                      0.076066 s  
+Array count: 50
+Array size: 10000
 
-Array count: 30  
-Array size: 100000  
-PHP userland:           11.057584047318 s  
-PHP extension (zephir): 5.1014478206635 s  
-PHP built-in sort:      0.48250508308411 s  
-C:                      0.539713 s  
+php simple:         0.643 s
+php opti:           0.420 s
+
+zepir simple:       0.735 s
+zepir opti:         0.322 s
+
+php built-in sort:  0.0340 s
+
+C:                  0.038747 s
+
+// --------------------------------------------------
+
+Array count: 30
+Array size: 100000
+
+php simple:         4.512 s
+php opti:           2.892 s
+
+zepir simple:       4.930 s
+zepir opti:         2.179 s
+
+php built-in sort:  0.256 s
+
+C:                  0.274866 s
+
+// --------------------------------------------------
+
+Array count: 20
+Array size: 500000
+
+php simple:         17.249 s
+php opti:           10.754 s
+
+zepir simple:       17.755 s
+zepir opti:         7.980 s
+
+php built-in sort:  1.003 s
+
+C:                  1.016297 s
+
+// --------------------------------------------------
 
 Array count: 10
-Array size: 500000
-php userland:           20.105852127075 s
-php extension (zephir): 8.7928829193115 s
-php built-in sort:      0.93890905380249 s
-C:                      0.926520 s  
-
-Array count: 5
 Array size: 1000000
-php userland:           21.140818834305 s
-php extension (zephir): 9.0098340511322 s
-php built-in sort:      0.99025511741638 s
-C:                      0.965595 s 
+
+php simple:         17.439 s
+php opti:           11.263 s
+
+zepir simple:       18.629 s
+zepir opti:         8.428 s
+
+php built-in sort:  1.119 s
+
+C:                  1.082885 s
 ```
 
 ### Quick sort

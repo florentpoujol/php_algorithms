@@ -1,4 +1,4 @@
-namespace Sort;
+namespace ZephirAlgos;
 
 class BinaryTreeNode
 {

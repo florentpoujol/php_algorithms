@@ -3,9 +3,10 @@
 #include <string.h>
 
 #define REGISTER_TIME(varName, s) \
-    printf("Regsiter time %s \n", s); \
+    printf("Register time %s \n", s); \
     struct timespec varName; \
     clock_gettime(CLOCK_MONOTONIC_RAW, &varName);
+
 
 
 void array_print_inline(int array[], int size, char *text)
@@ -18,6 +19,7 @@ void array_print_inline(int array[], int size, char *text)
     }
     printf("\n");
 }
+
 
 void array_print(int array[], int size, char *text)
 {
@@ -44,6 +46,17 @@ void array_shuffle(int *array, size_t n)
           array[i] = t;
         }
     }
+}
+
+
+int array_sorted(int *array, int size)
+{
+    for (int i=1; i < size; i++) { 
+        if (array[i-1] > array[i]) {
+            return 0;
+        }
+    }
+    return 1;
 }
 
 

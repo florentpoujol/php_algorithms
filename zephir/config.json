@@ -18,9 +18,9 @@
     },
     "warnings": {
         "unused-variable": true,
-        "unused-variable-external": true,
+        "unused-variable-external": false,
         "possible-wrong-parameter": true,
-        "possible-wrong-parameter-undefined": true,
+        "possible-wrong-parameter-undefined": false,
         "nonexistent-function": true,
         "nonexistent-class": true,
         "non-valid-isset": true,
@@ -52,10 +52,10 @@
         "check-invalid-reads": false,
         "internal-call-transformation": false
     },
-    "namespace": "sort",
-    "name": "sort",
-    "description": "A collection of Sort and Search functions",
-    "author": "Florent Poujol",
+    "namespace": "zephiralgos",
+    "name": "zephiralgos",
+    "description": "",
+    "author": "",
     "version": "0.0.1",
     "verbose": false,
     "requires": {

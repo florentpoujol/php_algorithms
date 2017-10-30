@@ -1,14 +1,14 @@
 #include <phpcpp.h>
 
-class CppAlgos : public Php::Base
+class BinarySearch : public Php::Base
 {
 
 public:
     /**
      *  C++ constructor and destructor
      */
-    CppAlgos() = default;
-    virtual ~CppAlgos() = default;
+    // BinarySearch() = default;
+    // virtual ~BinarySearch() = default;
 
     /**
      * keep the array as a Php::Value
@@ -19,11 +19,11 @@ public:
      * @param int target
      * @return int
      */
-    static Php::Value binarySearch3(Php::Parameters &params) {
-        return CppAlgos::_binarySearch3(params[0], params[1], params[2], params[3]);
+    static Php::Value opti_recursive(Php::Parameters &params) {
+        return BinarySearch::_opti_recursive(params[0], params[1], params[2], params[3]);
     }
 
-    static bool _binarySearch3(Php::Value array, int startId, int size, int target) {
+    static bool _opti_recursive(Php::Value array, int startId, int size, int target) {
         if (size <= 0) {
             return false;
         }
@@ -39,14 +39,14 @@ public:
         }
 
         if (target < middleValue) {
-            return CppAlgos::_binarySearch3(array, startId, middleId - startId, target);
+            return BinarySearch::_opti_recursive(array, startId, middleId - startId, target);
         }
         
-        return CppAlgos::_binarySearch3(array, middleId + 1, size - (middleId - startId + 1), target);
+        return BinarySearch::_opti_recursive(array, middleId + 1, size - (middleId - startId + 1), target);
     }
 
 
-    static Php::Value binarySearch4(Php::Parameters &params) {
+    static Php::Value opti(Php::Parameters &params) {
         Php::Value array = params[0]; 
         // the cast to a std::vector<int> takes more than 40 seconds for 4 millions elements
         int startId = params[1];
@@ -84,23 +84,23 @@ extern "C" {
     {
         static Php::Extension extension("cppalgos", "1.0");
 
-        Php::Class<CppAlgos> algosDescriptor("CppAlgos");
+        Php::Class<BinarySearch> binarySearchDesc("CppAlgos\\BinarySearch");
 
-        algosDescriptor.method<&CppAlgos::binarySearch3>("binarySearch3", {
+        binarySearchDesc.method<&BinarySearch::opti_recursive>("opti_recursive", {
             Php::ByVal("array", Php::Type::Array),
             Php::ByVal("startId", Php::Type::Numeric),
             Php::ByVal("size", Php::Type::Numeric),
             Php::ByVal("target", Php::Type::Numeric)
         }); // static method
 
-        algosDescriptor.method<&CppAlgos::binarySearch4>("binarySearch4", {
+        binarySearchDesc.method<&BinarySearch::opti>("opti", {
             Php::ByVal("array", Php::Type::Array),
             Php::ByVal("startId", Php::Type::Numeric),
             Php::ByVal("size", Php::Type::Numeric),
             Php::ByVal("target", Php::Type::Numeric)
         }); // static method
 
-        extension.add(std::move(algosDescriptor));
+        extension.add(std::move(binarySearchDesc));
 
         return extension;
     }
