@@ -110,7 +110,7 @@ $arraySize = (int)$argv[2];
 $array = range(0, $arraySize - 1);
 shuffle($array);
 
-$debug = false; // for isSorted();
+$debug = true; // for isSorted();
 
 register_time_var("start");
 
@@ -152,6 +152,25 @@ for ($i = 0; $i < $arrayCount; $i++) {
 register_time_var("zephir_opti");
 
 
+/*
+for ($i = 0; $i < $arrayCount; $i++) { 
+    $_array = CppAlgos\MergeSort::simple($array);    
+    if (! isSorted($_array, "phpcpp_simple")) {
+        break;
+    }
+}
+
+register_time_var("phpcpp_simple");
+
+for ($i = 0; $i < $arrayCount; $i++) { 
+    $_array = CppAlgos\MergeSort::opti($array);    
+    if (! isSorted($_array, "phpcpp_opti")) {
+        break;
+    }
+}
+
+register_time_var("phpcpp_opti");*/
+
 for ($i = 0; $i < $arrayCount; $i++) { 
     sort($array);
 }
@@ -183,8 +202,8 @@ Array size: $arraySize
 php simple:         $php_simpleDiff s
 php opti:           $php_optiDiff s
 
-zepir simple:       $zephir_simpleDiff s
-zepir opti:         $zephir_optiDiff s
+zephir simple:      $zephir_simpleDiff s
+zephir opti:        $zephir_optiDiff s
 
 php built-in sort:  $php_sortDiff s
 
